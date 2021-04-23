@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cfx-proxy
+  namespace: experiments
+spec:
+  replicas: 1
+  template:
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: dc
+                operator: In
+                values:
+                - ovh
+      containers:
+      - env:
+        - name: LOCAL_ENDPOINT_PORT
+          value: "30120"
+        - name: REMOTE
+          value: "Your server IP"
+        - name: LOCAL_ENDPOINT_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.hostIP
+        image: docker.io/citizenfx/dummy-proxy
+        name: cfx-proxy
+        ports:
+        - containerPort: 30120
+          hostPort: 30120
+          name: fxs
+          protocol: UDP
